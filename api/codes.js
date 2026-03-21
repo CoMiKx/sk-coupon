@@ -4,14 +4,8 @@
 //   UPSTASH_REDIS_REST_KV_REST_API_TOKEN
 // Plus one manual env var:
 //   CHECK_UID  (your in-game UID, used to validate codes before adding)
-//
-// ── DB call budget ────────────────────────────────────────────────────────
-//   GET  /api/codes  →  1 kvGet  (codes + lastClean stored together in one key)
-//   POST /api/codes  →  1 kvGet + 1 external fetch (validate) + 1 kvSet
-//   Background prune →  1 kvGet + N external fetches + 1 kvSet  (runs max once/7d)
-// ─────────────────────────────────────────────────────────────────────────
 
-const STORE_KEY = 'sk_store'; // single key holds { codes: [], lastClean: timestamp }
+const STORE_KEY = 'sk_store';
 
 function upstashUrl()   { return process.env.UPSTASH_REDIS_REST_KV_REST_API_URL; }
 function upstashToken() { return process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN; }
@@ -29,13 +23,13 @@ async function readStore() {
       codes:     Array.isArray(parsed.codes) ? parsed.codes : [],
       lastClean: Number(parsed.lastClean)    || 0,
     };
-  } catch {
+  } catch (e) {
+    console.error('readStore error:', e);
     return { codes: [], lastClean: 0 };
   }
 }
 
 // ── Single-key write ──────────────────────────────────────────────────────
-// Upstash REST SET: send value as plain text body, NOT as JSON { value: ... }
 async function writeStore(store) {
   await fetch(`${upstashUrl()}/set/${STORE_KEY}`, {
     method:  'POST',
@@ -75,9 +69,26 @@ async function pruneCodesBackground(store) {
   const valid = [];
   for (const code of store.codes) {
     if (await isValidCode(code)) valid.push(code);
-    await new Promise(r => setTimeout(r, 60_000)); // 1 min between checks
+    await new Promise(r => setTimeout(r, 60_000));
   }
-  await writeStore({ codes: valid, lastClean: Date.now() }); // 1 kvSet
+  await writeStore({ codes: valid, lastClean: Date.now() });
+}
+
+// ── Parse raw body (Vercel doesn't always auto-parse JSON) ────────────────
+async function parseBody(req) {
+  // If Vercel already parsed it, use it directly
+  if (req.body && typeof req.body === 'object') return req.body;
+
+  // Otherwise read the raw stream
+  return new Promise((resolve) => {
+    let data = '';
+    req.on('data', chunk => { data += chunk; });
+    req.on('end', () => {
+      try { resolve(JSON.parse(data)); }
+      catch { resolve({}); }
+    });
+    req.on('error', () => resolve({}));
+  });
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────
@@ -87,37 +98,44 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // Verify env vars are present — surface a clear error if missing
+  if (!upstashUrl() || !upstashToken()) {
+    console.error('Missing Upstash env vars:', {
+      url:   upstashUrl()   ? 'set' : 'MISSING',
+      token: upstashToken() ? 'set' : 'MISSING',
+    });
+    return res.status(500).json({ error: 'Server misconfiguration: Upstash env vars not set' });
+  }
+
   // GET — return codes list
-  // Total DB cost: 1 kvGet
   if (req.method === 'GET') {
-    const store = await readStore(); // 1 kvGet
+    const store = await readStore();
     const daysSinceClean = (Date.now() - store.lastClean) / (1000 * 60 * 60 * 24);
     if (daysSinceClean >= 7) {
-      // Update lastClean immediately so concurrent requests don't also trigger a prune
-      await writeStore({ ...store, lastClean: Date.now() }); // 1 kvSet (rare, once/7d)
+      await writeStore({ ...store, lastClean: Date.now() });
       pruneCodesBackground(store); // fire-and-forget
     }
     return res.status(200).json(store.codes);
   }
 
   // POST — validate + add new code
-  // Total DB cost: 1 kvGet + 1 kvSet
   if (req.method === 'POST') {
-    const { newCode } = req.body || {};
+    const body = await parseBody(req);
+    const { newCode } = body;
     if (!newCode) return res.status(400).json({ error: 'Missing newCode' });
 
-    const store = await readStore(); // 1 kvGet
+    const store = await readStore();
 
     if (store.codes.includes(newCode)) {
       return res.status(400).json({ error: 'Code already exists in Global list' });
     }
 
-    if (!(await isValidCode(newCode))) { // 1 external fetch (not a DB call)
+    if (!(await isValidCode(newCode))) {
       return res.status(400).json({ error: 'Code is invalid or expired' });
     }
 
     store.codes.push(newCode);
-    await writeStore(store); // 1 kvSet
+    await writeStore(store);
     return res.status(200).json({ success: true, message: 'Added successfully' });
   }
 
