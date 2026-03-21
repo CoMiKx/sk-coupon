@@ -547,13 +547,21 @@ function updateStats(done) {
   document.getElementById('progress-pct').textContent = pct + '%';
 }
 
+// --- Detect environment: use proxy when hosted, direct when local file ---
+const IS_LOCAL = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
 // --- Validate GET ---
 async function validateCoupon(uid, code) {
-  const url = `https://coupon.netmarble.com/api/coupon/reward?gameCode=tskgb&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(uid)}`;
   try {
-    const r = await fetch(url, { method: 'GET' });
-    const j = await r.json();
-    return j;
+    let r;
+    if (IS_LOCAL) {
+      const url = `https://coupon.netmarble.com/api/coupon/reward?gameCode=tskgb&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(uid)}`;
+      r = await fetch(url, { method: 'GET' });
+    } else {
+      const url = `/api/validate?couponCode=${encodeURIComponent(code)}&pid=${encodeURIComponent(uid)}`;
+      r = await fetch(url, { method: 'GET' });
+    }
+    return await r.json();
   } catch(e) {
     return { success: false, errorCode: -1, errorMessage: e.message };
   }
@@ -561,15 +569,22 @@ async function validateCoupon(uid, code) {
 
 // --- Redeem POST ---
 async function redeemCoupon(uid, code) {
-  const url = 'https://coupon.netmarble.com/api/coupon';
   try {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ gameCode: 'tskgb', couponCode: code, langCd: 'TH_TH', pid: uid })
-    });
-    const j = await r.json();
-    return j;
+    let r;
+    if (IS_LOCAL) {
+      r = await fetch('https://coupon.netmarble.com/api/coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameCode: 'tskgb', couponCode: code, langCd: 'TH_TH', pid: uid })
+      });
+    } else {
+      r = await fetch('/api/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ couponCode: code, pid: uid })
+      });
+    }
+    return await r.json();
   } catch(e) {
     return { success: false, errorCode: -1, errorMessage: e.message };
   }
