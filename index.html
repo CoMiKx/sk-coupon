@@ -1009,12 +1009,14 @@
       if (isManual) {
         codes = parseLines('codes');
       } else {
-        await fetchGlobalCodes();
+        // Use the cache loaded on page load — avoids a DB call on every Start click.
+        // Re-fetch only if cache is empty (e.g. page loaded before fetch completed).
+        if (globalCodesCache.length === 0) await fetchGlobalCodes();
         codes = globalCodesCache;
       }
 
-      if (!uids.length)  { alert('No UIDs entered.'); return; }
-      if (!codes.length) { alert('No coupon codes found.'); return; }
+      if (!uids.length)  { showToast('No UIDs entered.', 'error'); return; }
+      if (!codes.length) { showToast('No coupon codes found.', 'error'); return; }
 
       const delayMs = 1000;
       let pairs = [];
