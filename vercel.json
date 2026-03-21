@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/api/validate", "destination": "/api/validate" },
     { "source": "/api/redeem",   "destination": "/api/redeem"   },
+    { "source": "/api/codes",    "destination": "/api/codes"    },
     { "source": "/(.*)",         "destination": "/index.html"   }
   ]
 }
