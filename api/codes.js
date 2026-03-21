@@ -1,14 +1,14 @@
 // Upstash Redis REST API — no SDK, plain fetch.
 // Env vars injected automatically by Vercel's Upstash KV integration:
-//   KV_REST_API_URL
-//   KV_REST_API_TOKEN
+//   UPSTASH_REDIS_7K_KV_REST_API_URL
+//   UPSTASH_REDIS_7K_KV_REST_API_TOKEN
 // Plus one manual env var:
 //   CHECK_UID  (your in-game UID, used to validate codes before adding)
 
 const STORE_KEY = 'sk_store';
 
-function upstashUrl()   { return process.env.UPSTASH_REDIS_REST_KV_REST_API_KV_REST_API_URL; }
-function upstashToken() { return process.env.UPSTASH_REDIS_REST_KV_REST_API_KV_REST_API_TOKEN; }
+function upstashUrl()   { return process.env.UPSTASH_REDIS_7K_KV_REST_API_URL; }
+function upstashToken() { return process.env.UPSTASH_REDIS_7K_KV_REST_API_TOKEN; }
 
 // ── Single-key read ───────────────────────────────────────────────────────
 async function readStore() {
