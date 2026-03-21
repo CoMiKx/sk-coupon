@@ -35,14 +35,15 @@ async function readStore() {
 }
 
 // ── Single-key write ──────────────────────────────────────────────────────
+// Upstash REST SET: send value as plain text body, NOT as JSON { value: ... }
 async function writeStore(store) {
   await fetch(`${upstashUrl()}/set/${STORE_KEY}`, {
     method:  'POST',
     headers: {
       Authorization:  `Bearer ${upstashToken()}`,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/octet-stream',
     },
-    body: JSON.stringify({ value: JSON.stringify(store) }),
+    body: JSON.stringify(store),
   });
 }
 
