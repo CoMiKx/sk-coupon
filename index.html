@@ -1,1108 +1,468 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SK Re:Birth — Bulk Coupon Redeemer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tiempos+Text:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Styrene+A:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Fallback to similar feel fonts available on Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      /* Claude.ai palette */
-      --bg: #f0ece3;           /* warm parchment */
-      --surface: #faf8f4;      /* near-white warm */
-      --surface2: #ede9e0;     /* soft warm grey */
-      --surface3: #e5e0d5;     /* card hover */
-      --border: #d8d2c6;       /* warm border */
-      --border-soft: #e8e3da;  /* softer border */
-      --accent: #c96442;       /* Claude terracotta/coral */
-      --accent-hover: #b85535; /* darker terracotta */
-      --accent-light: rgba(201, 100, 66, 0.08);
-      --accent-mid: rgba(201, 100, 66, 0.15);
-      --gold: #9a7b4f;         /* warm amber muted */
-      --text: #1a1714;         /* near-black warm */
-      --text-secondary: #4a4540; /* secondary text */
-      --muted: #7a746c;        /* muted warm grey */
-      --muted-light: #9e9890;  /* lighter muted */
-      --success: #3d8c5a;      /* muted sage green */
-      --warn: #c25f20;         /* warm orange */
-      --info: #4a6fa5;         /* muted blue */
-      --fail: #9b3a3a;         /* muted red */
-
-      /* Typography — Claude uses a humanist serif + clean sans stack */
-      --font-head: 'Lora', 'Georgia', serif;
-      --font-body: 'DM Sans', 'Helvetica Neue', sans-serif;
-      --font-mono: 'DM Mono', 'Menlo', monospace;
-
-      --radius: 10px;
-      --radius-sm: 6px;
-      --shadow: 0 1px 3px rgba(26, 23, 20, 0.06), 0 1px 2px rgba(26, 23, 20, 0.04);
-      --shadow-md: 0 4px 12px rgba(26, 23, 20, 0.08), 0 2px 4px rgba(26, 23, 20, 0.04);
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 14px;
-      min-height: 100vh;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Subtle grain texture overlay like Claude */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.4;
-    }
-
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 1040px;
-      margin: 0 auto;
-      padding: 32px 24px 72px;
-    }
-
-    /* ─── Header ─── */
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 0 0 28px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 32px;
-    }
-
-    .header-icon {
-      width: 42px;
-      height: 42px;
-      background: var(--accent);
-      color: #fff;
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 2px 8px rgba(201, 100, 66, 0.3);
-      flex-shrink: 0;
-    }
-
-    .header h1 {
-      font-family: var(--font-head);
-      font-size: 22px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      line-height: 1.2;
-      color: var(--text);
-    }
-
-    .header h1 em {
-      font-style: italic;
-      color: var(--accent);
-    }
-
-    .header p {
-      font-size: 12px;
-      color: var(--muted);
-      font-family: var(--font-mono);
-      margin-top: 3px;
-      letter-spacing: 0.3px;
-    }
-
-    .header-badge {
-      margin-left: auto;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    /* ─── Grid ─── */
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    @media (max-width: 680px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-
-    /* ─── Card ─── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-title {
-      font-family: var(--font-body);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .card-title::before {
-      content: '';
-      width: 2px;
-      height: 12px;
-      background: var(--accent);
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-
-    /* ─── Textarea ─── */
-    textarea {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      padding: 11px 13px;
-      resize: vertical;
-      outline: none;
-      transition: border-color .15s, box-shadow .15s;
-      line-height: 1.65;
-    }
-
-    textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(201, 100, 66, 0.12);
-    }
-
-    textarea::placeholder { color: var(--muted-light); }
-
-    .count-badge {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--gold);
-      margin-top: 7px;
-    }
-
-    /* ─── Settings ─── */
-    .settings-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    @media (max-width: 600px) {
-      .settings-row { grid-template-columns: 1fr; }
-    }
-
-    .field label {
-      display: block;
-      font-size: 11px;
-      color: var(--muted);
-      font-family: var(--font-mono);
-      margin-bottom: 5px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .field input,
-    .field select {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      padding: 8px 11px;
-      outline: none;
-      transition: border-color .15s, box-shadow .15s;
-    }
-
-    .field input:focus,
-    .field select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(201, 100, 66, 0.12);
-    }
-
-    /* ─── Buttons ─── */
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    button {
-      font-family: var(--font-body);
-      font-weight: 500;
-      font-size: 13.5px;
-      letter-spacing: 0.01em;
-      border: none;
-      cursor: pointer;
-      border-radius: var(--radius-sm);
-      padding: 9px 20px;
-      transition: all .15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      line-height: 1;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 1px 3px rgba(201, 100, 66, 0.25);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: var(--accent-hover);
-      box-shadow: 0 3px 10px rgba(201, 100, 66, 0.3);
-      transform: translateY(-1px);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn-secondary {
-      background: var(--surface);
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-
-    .btn-secondary:hover {
-      background: var(--surface2);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .btn-stop {
-      background: #fdf2f0;
-      color: var(--fail);
-      border: 1px solid #e8c0b8;
-    }
-
-    .btn-stop:hover {
-      background: #f9e5e1;
-    }
-
-    /* ─── Divider ─── */
-    .divider {
-      width: 1px;
-      height: 22px;
-      background: var(--border);
-    }
-
-    /* ─── Code source select (inline) ─── */
-    select.inline-select {
-      width: 150px;
-      font-size: 12px;
-      padding: 7px 10px;
-      font-family: var(--font-mono);
-      background: var(--surface);
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius-sm);
-      outline: none;
-      height: 36px;
-      cursor: pointer;
-      transition: border-color .15s;
-    }
-
-    select.inline-select:focus {
-      border-color: var(--accent);
-    }
-
-    /* ─── Modal ─── */
-    #add-code-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(26, 23, 20, 0.45);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(3px);
-    }
-
-    .modal-box {
-      background: var(--surface);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius);
-      padding: 28px;
-      width: 360px;
-      box-shadow: var(--shadow-md);
-    }
-
-    .modal-title {
-      font-family: var(--font-head);
-      font-weight: 600;
-      font-size: 17px;
-      margin-bottom: 6px;
-      color: var(--text);
-      letter-spacing: -0.2px;
-    }
-
-    .modal-subtitle {
-      font-size: 12.5px;
-      color: var(--muted);
-      margin-bottom: 18px;
-      line-height: 1.5;
-    }
-
-    .modal-input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      font-family: var(--font-mono);
-      outline: none;
-      font-size: 13px;
-      margin-bottom: 20px;
-      transition: border-color .15s, box-shadow .15s;
-    }
-
-    .modal-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(201, 100, 66, 0.12);
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    /* ─── Progress card ─── */
-    .progress-card {
-      background: var(--surface);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
-    }
-
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .progress-label {
-      font-size: 12.5px;
-      color: var(--muted);
-      font-family: var(--font-mono);
-    }
-
-    .progress-pct {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--accent);
-      font-weight: 500;
-    }
-
-    .progress-bar-bg {
-      width: 100%;
-      height: 4px;
-      background: var(--surface3);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 18px;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #e08060);
-      border-radius: 99px;
-      transition: width .35s ease;
-      width: 0%;
-    }
-
-    .stats-row {
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-
-    .stat { display: flex; flex-direction: column; gap: 3px; }
-
-    .stat-label {
-      font-size: 10px;
-      color: var(--muted-light);
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-    }
-
-    .stat-value {
-      font-family: var(--font-mono);
-      font-size: 20px;
-      font-weight: 500;
-      line-height: 1;
-    }
-
-    .stat-value.success { color: var(--success); }
-    .stat-value.fail    { color: var(--fail); }
-    .stat-value.skip    { color: var(--warn); }
-    .stat-value.total   { color: var(--accent); }
-
-    /* ─── Results table ─── */
-    .results-card {
-      background: var(--surface);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      box-shadow: var(--shadow);
-    }
-
-    .results-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .result-count {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-soft);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      font-family: var(--font-mono);
-    }
-
-    th {
-      text-align: left;
-      padding: 8px 14px;
-      background: var(--surface2);
-      color: var(--muted);
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-size: 10.5px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    td {
-      padding: 8px 14px;
-      border-bottom: 1px solid var(--border-soft);
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text-secondary);
-    }
-
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--surface2); }
-
-    /* ─── Tags ─── */
-    .tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .tag-SUCCESS {
-      background: rgba(61, 140, 90, 0.1);
-      color: var(--success);
-      border: 1px solid rgba(61, 140, 90, 0.2);
-    }
-
-    .tag-FAIL {
-      background: rgba(155, 58, 58, 0.1);
-      color: var(--fail);
-      border: 1px solid rgba(155, 58, 58, 0.2);
-    }
-
-    .tag-SKIP {
-      background: rgba(194, 95, 32, 0.1);
-      color: var(--warn);
-      border: 1px solid rgba(194, 95, 32, 0.2);
-    }
-
-    /* ─── Spinner ─── */
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .spinner {
-      width: 13px;
-      height: 13px;
-      border: 2px solid rgba(255, 255, 255, 0.25);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .65s linear infinite;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-
-    /* ─── Responsive ─── */
-    @media (max-width: 480px) {
-      .header h1 { font-size: 18px; }
-      .container { padding: 20px 16px 48px; }
-    }
-
-    /* ─── Toast notifications ─── */
-    #toast-container {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      pointer-events: none;
-    }
-
-    .toast {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 18px;
-      box-shadow: var(--shadow-md);
-      font-family: var(--font-body);
-      font-size: 13.5px;
-      color: var(--text);
-      min-width: 240px;
-      max-width: 380px;
-      pointer-events: auto;
-      animation: toast-in .22s ease forwards;
-    }
-
-    .toast.toast-hide {
-      animation: toast-out .2s ease forwards;
-    }
-
-    .toast-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
-    .toast-msg  { flex: 1; line-height: 1.4; }
-
-    .toast-success { border-left: 3px solid var(--success); }
-    .toast-error   { border-left: 3px solid var(--fail); }
-
-    @keyframes toast-in {
-      from { opacity: 0; transform: translateY(10px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes toast-out {
-      from { opacity: 1; transform: translateY(0) scale(1); }
-      to   { opacity: 0; transform: translateY(6px) scale(0.97); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7K AUTOMATE COUPON</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        textarea.form-control {
+            resize: none;
+            overflow: hidden;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .topup-dropdown-btn {
+            min-height: 38px;
+        }
+
+        .topup-dropdown-btn::after {
+            margin-left: auto;
+        }
+
+        .result-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .result-summary {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .code-item {
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .code-item:last-child {
+            border-bottom: none;
+        }
+
+        .mono {
+            font-family: Consolas, Monaco, monospace;
+        }
+    </style>
 </head>
 
 <body>
-  <!-- Toast container -->
-  <div id="toast-container"></div>
+    <div class="container mt-4 mb-5">
+        <div class="h1 text-center mt-5 mb-4">7K AUTOMATE COUPON</div>
 
-  <div class="container">
+        <div class="w-100">
+            <div class="row">
+                <div class="col-12 col-md-8 mb-3">
+                    <div class="input-group">
+                        <textarea id="uidList" class="form-control"
+                            placeholder="กรอก UID หลายรายการ, Enter เพื่อเพิ่ม UID ใหม่" rows="1"
+                            oninput="autoResize(this)"></textarea>
+                    </div>
+                </div>
 
-    <!-- Header -->
-    <div class="header">
-      <div class="header-icon">⚔️</div>
-      <div>
-        <h1>Seven Knights <em>Re:Birth</em></h1>
-        <p>bulk coupon redeemer · gameCode: tskgb</p>
-      </div>
-      <div class="header-badge">v1.1</div>
-    </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <select id="topUpType" class="form-select d-none">
+                        <option value="auto" selected>อัตโนมัติ</option>
+                        <option value="manual">อัตโนมือ</option>
+                    </select>
 
-    <!-- Input grid -->
-    <div class="grid">
-      <div class="card">
-        <div class="card-title">Player UIDs</div>
-        <textarea id="uids" rows="8"
-          placeholder="Enter one UID per line:&#10;ABCDEF1234567890...&#10;ABCDEF1234567890..."></textarea>
-        <div class="count-badge" id="uid-count">0 UIDs</div>
-      </div>
-      <div class="card" id="codes-card">
-        <div class="card-title">Coupon Codes</div>
-        <textarea id="codes" rows="8"
-          placeholder="Enter one coupon code per line:&#10;SKRE300BIRTH&#10;SKREBDAY2025..."
-          style="display:none"></textarea>
-        <div class="count-badge" id="code-count">0 codes</div>
-      </div>
-    </div>
+                    <div class="dropdown w-100">
+                        <button id="topUpTypeDropdownBtn"
+                            class="btn btn-light border dropdown-toggle w-100 text-start d-flex align-items-center shadow-sm topup-dropdown-btn"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            อัตโนมัติ
+                        </button>
 
-    <!-- Buttons -->
-    <div class="btn-row">
-      <button class="btn-primary" id="btn-start" onclick="startBulk()">
-        <div class="spinner" id="start-spinner" style="display:none"></div>
-        <span id="start-label">▶ Start Bulk Redeem</span>
-      </button>
-      <button class="btn-stop" id="btn-stop" onclick="stopBulk()" style="display:none">
-        ⬛ Stop
-      </button>
-      <button class="btn-secondary" onclick="clearAll()">✕ Clear All</button>
+                        <ul class="dropdown-menu w-100 shadow">
+                            <li>
+                                <button type="button" class="dropdown-item active"
+                                    onclick="setTopUpType('auto', 'อัตโนมัติ', this)">
+                                    อัตโนมัติ
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item"
+                                    onclick="setTopUpType('manual', 'อัตโนมือ', this)">
+                                    อัตโนมือ
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
-      <div class="divider"></div>
+            <div id="codeListWrapper" class="col-12 mb-3 hidden">
+                <div class="input-group">
+                    <textarea id="codeList" class="form-control"
+                        placeholder="กรอกโค้ดหลายรายการ, Enter เพื่อเพิ่มโค้ดใหม่" rows="1"
+                        oninput="autoResize(this)"></textarea>
+                </div>
+            </div>
 
-      <select id="code-source" class="inline-select" onchange="toggleCodeMode()">
-        <option value="global">Community Codes</option>
-        <option value="manual">Manual Input</option>
-      </select>
+            <button id="submitBtn" class="btn btn-success text-light w-100" onclick="topUpCoupon()">
+                เติมโค้ด
+            </button>
 
-      <button class="btn-secondary" id="btn-add-global"
-        style="padding:0 16px; font-size:12px; height:36px;"
-        onclick="openAddCodeModal()">+ Add Code</button>
-    </div>
+            <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4 class="mb-0">ผลลัพธ์</h4>
+                    <div id="resultSummary" class="result-summary"></div>
+                </div>
 
-    <!-- Add Code Modal -->
-    <div id="add-code-modal">
-      <div class="modal-box">
-        <div class="modal-title">Add Community Code</div>
-        <div class="modal-subtitle">The code will be validated before being added to the shared list.</div>
-        <input type="text" id="modal-code-input" class="modal-input"
-          placeholder="Enter coupon code...">
-        <div class="modal-footer">
-          <button class="btn-secondary" style="padding:8px 16px; font-size:12.5px"
-            onclick="closeAddCodeModal()">Cancel</button>
-          <button class="btn-primary" id="btn-modal-submit"
-            style="padding:8px 16px; font-size:12.5px"
-            onclick="submitNewCode()">Submit</button>
+                <div id="resultContainer"></div>
+            </div>
         </div>
-      </div>
     </div>
-
-    <!-- Progress -->
-    <div class="progress-card" id="progress-section" style="display:none">
-      <div class="progress-header">
-        <span class="progress-label" id="progress-label">Initializing...</span>
-        <span class="progress-pct" id="progress-pct">0%</span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="prog-bar"></div>
-      </div>
-      <div class="stats-row">
-        <div class="stat">
-          <div class="stat-label">Total</div>
-          <div class="stat-value total" id="s-total">0</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Success</div>
-          <div class="stat-value success" id="s-ok">0</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Failed</div>
-          <div class="stat-value fail" id="s-fail">0</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Skipped</div>
-          <div class="stat-value skip" id="s-skip">0</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Remaining</div>
-          <div class="stat-value" id="s-remain" style="color:var(--text-secondary)">0</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Results table -->
-    <div class="results-card" id="results-section" style="display:none">
-      <div class="results-header">
-        <div class="card-title" style="margin:0">Results</div>
-        <span class="result-count" id="result-count"></span>
-      </div>
-      <div class="table-wrap">
-        <table id="result-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>UID</th>
-              <th>Coupon</th>
-              <th>Status</th>
-              <th>Validate</th>
-              <th>Redeem Msg</th>
-              <th>Reward</th>
-            </tr>
-          </thead>
-          <tbody id="result-body"></tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-
-  <script>
-    let running = false;
-    let stopFlag = false;
-    let results = [];
-    let rowIndex = 0;
-
-    // ── Toast helper ────────────────────────────────────────────────────────
-    function showToast(msg, type = 'success', duration = 3500) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      toast.innerHTML = `
-        <span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span>
-        <span class="toast-msg">${msg}</span>
-      `;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.classList.add('toast-hide');
-        toast.addEventListener('animationend', () => toast.remove());
-      }, duration);
-    }
-
-    function parseLines(id) {
-      return document.getElementById(id).value.split('\n').map(s => s.trim()).filter(Boolean);
-    }
-
-    document.getElementById('uids').addEventListener('input', () => {
-      document.getElementById('uid-count').textContent = parseLines('uids').length + ' UIDs';
-    });
-    document.getElementById('codes').addEventListener('input', () => {
-      if (document.getElementById('code-source').value === 'manual') {
-        document.getElementById('code-count').textContent = parseLines('codes').length + ' codes';
-      }
-    });
-
-    let globalCodesCache = [];
-
-    function toggleCodeMode() {
-      const mode = document.getElementById('code-source').value;
-      const btnAdd = document.getElementById('btn-add-global');
-
-      if (mode === 'manual') {
-        document.getElementById('codes-card').style.display = '';
-        document.querySelector('.grid').style.gridTemplateColumns = '';
-        document.getElementById('codes').style.display = '';
-        document.getElementById('code-count').textContent = parseLines('codes').length + ' codes';
-        btnAdd.style.display = 'none';
-      } else {
-        document.getElementById('codes-card').style.display = 'none';
-        document.querySelector('.grid').style.gridTemplateColumns = '1fr';
-        btnAdd.style.display = '';
-      }
-    }
-
-    function openAddCodeModal() {
-      document.getElementById('add-code-modal').style.display = 'flex';
-      document.getElementById('modal-code-input').value = '';
-      document.getElementById('modal-code-input').focus();
-    }
-
-    function closeAddCodeModal() {
-      document.getElementById('add-code-modal').style.display = 'none';
-    }
-
-    async function fetchGlobalCodes() {
-      try {
-        const res = await fetch('/api/codes');
-        const data = await res.json();
-        globalCodesCache = Array.isArray(data) ? data : [];
-        if (document.getElementById('code-source').value === 'global') {
-          document.getElementById('code-count').textContent = globalCodesCache.length + ' global codes';
-        }
-      } catch (e) {
-        console.error('Failed to load global codes', e);
-      }
-      toggleCodeMode();
-    }
-    window.addEventListener('DOMContentLoaded', fetchGlobalCodes);
-
-    async function submitNewCode() {
-      const input = document.getElementById('modal-code-input');
-      const code = input.value.trim().toUpperCase();
-      if (!code) return;
-
-      const btn = document.getElementById('btn-modal-submit');
-      input.disabled = true;
-      btn.disabled = true;
-      const originalBtnText = btn.textContent;
-      btn.textContent = 'Validating...';
-
-      try {
-        const res = await fetch('/api/codes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ newCode: code })
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('Code added — thanks for supporting the community! 🎉', 'success');
-          input.value = '';
-          closeAddCodeModal();
-          await fetchGlobalCodes();
-        } else {
-          showToast(data.error || 'Invalid or expired code', 'error');
-        }
-      } catch (e) {
-        showToast('Network error — please try again', 'error');
-      }
-
-      input.disabled = false;
-      btn.disabled = false;
-      btn.textContent = originalBtnText;
-    }
-
-    let stats = { total: 0, ok: 0, fail: 0, skip: 0 };
-
-    function updateStats(done) {
-      document.getElementById('s-total').textContent = stats.total;
-      document.getElementById('s-ok').textContent = stats.ok;
-      document.getElementById('s-fail').textContent = stats.fail;
-      document.getElementById('s-skip').textContent = stats.skip;
-      document.getElementById('s-remain').textContent = stats.total - done;
-      const pct = stats.total ? Math.round((done / stats.total) * 100) : 0;
-      document.getElementById('prog-bar').style.width = pct + '%';
-      document.getElementById('progress-pct').textContent = pct + '%';
-    }
-
-    const IS_LOCAL = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-
-    async function validateCoupon(uid, code) {
-      try {
-        let r;
-        if (IS_LOCAL) {
-          const url = `https://coupon.netmarble.com/api/coupon/reward?gameCode=tskgb&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(uid)}`;
-          r = await fetch(url, { method: 'GET' });
-        } else {
-          const url = `/api/validate?couponCode=${encodeURIComponent(code)}&pid=${encodeURIComponent(uid)}`;
-          r = await fetch(url, { method: 'GET' });
-        }
-        return await r.json();
-      } catch (e) {
-        return { success: false, errorCode: -1, errorMessage: e.message };
-      }
-    }
-
-    async function redeemCoupon(uid, code) {
-      try {
-        let r;
-        if (IS_LOCAL) {
-          r = await fetch('https://coupon.netmarble.com/api/coupon', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameCode: 'tskgb', couponCode: code, langCd: 'TH_TH', pid: uid })
-          });
-        } else {
-          r = await fetch('/api/redeem', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ couponCode: code, pid: uid })
-          });
-        }
-        return await r.json();
-      } catch (e) {
-        return { success: false, errorCode: -1, errorMessage: e.message };
-      }
-    }
-
-    function addRow(uid, code, validateRes, redeemRes) {
-      rowIndex++;
-      const tbody = document.getElementById('result-body');
-      const tr = document.createElement('tr');
-
-      let status, tagClass;
-      if (redeemRes && redeemRes.success)       { status = 'SUCCESS'; tagClass = 'tag-SUCCESS'; }
-      else if (redeemRes && !redeemRes.success)  { status = 'FAIL';    tagClass = 'tag-FAIL'; }
-      else                                       { status = 'SKIP';    tagClass = 'tag-SKIP'; }
-
-      const validateMsg = validateRes
-        ? (validateRes.success ? '✓ valid' : `✗ ${validateRes.errorMessage || validateRes.errorCode}`)
-        : '—';
-      const redeemMsg = redeemRes
-        ? (redeemRes.success ? '✓ sent' : `✗ ${redeemRes.errorMessage || redeemRes.errorCode}`)
-        : '—';
-      const reward = validateRes?.rewardType
-        ? validateRes.resultData?.[0]?.productName || validateRes.rewardType
-        : '—';
-
-      tr.innerHTML = `
-        <td style="color:var(--muted-light)">${rowIndex}</td>
-        <td title="${uid}">${uid.length > 20 ? uid.slice(0, 20) + '…' : uid}</td>
-        <td style="color:var(--text)">${code}</td>
-        <td><span class="tag ${tagClass}">${status}</span></td>
-        <td>${validateMsg}</td>
-        <td>${redeemMsg}</td>
-        <td style="color:var(--gold)">${reward}</td>
-      `;
-      tbody.appendChild(tr);
-      document.getElementById('result-count').textContent = rowIndex + ' rows';
-      document.getElementById('results-section').style.display = '';
-
-      results.push({ no: rowIndex, uid, code, status, validateMsg, redeemMsg, reward });
-    }
-
-    const sleep = ms => new Promise(res => setTimeout(res, ms));
-
-    // Silently save a code to the community DB (fire-and-forget, no alert)
-    async function silentSaveToCommunity(code) {
-      if (IS_LOCAL) return; // no backend when running locally
-      try {
-        await fetch('/api/codes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ newCode: code })
-        });
-        // We ignore the response — "already exists" is fine, we just don't want to lose valid codes
-      } catch { /* silently ignore network errors */ }
-    }
-
-    async function startBulk() {
-      if (running) return;
-
-      const uids = parseLines('uids');
-      let codes = [];
-      const isManual = document.getElementById('code-source').value === 'manual';
-
-      if (isManual) {
-        codes = parseLines('codes');
-      } else {
-        // Use the cache loaded on page load — avoids a DB call on every Start click.
-        // Re-fetch only if cache is empty (e.g. page loaded before fetch completed).
-        if (globalCodesCache.length === 0) await fetchGlobalCodes();
-        codes = globalCodesCache;
-      }
-
-      if (!uids.length)  { showToast('No UIDs entered.', 'error'); return; }
-      if (!codes.length) { showToast('No coupon codes found.', 'error'); return; }
-
-      const delayMs = 1000;
-      let pairs = [];
-      for (const code of codes) {
-        for (const uid of uids) {
-          pairs.push([uid, code]);
-        }
-      }
-
-      // Track which manual codes have already been saved this session
-      const savedToCommunity = new Set();
-
-      stats = { total: pairs.length, ok: 0, fail: 0, skip: 0 };
-      rowIndex = 0;
-      results = [];
-      document.getElementById('result-body').innerHTML = '';
-      document.getElementById('progress-section').style.display = '';
-      document.getElementById('results-section').style.display = 'none';
-      updateStats(0);
-
-      running = true; stopFlag = false;
-      document.getElementById('btn-start').disabled = true;
-      document.getElementById('btn-stop').style.display = '';
-      document.getElementById('start-spinner').style.display = '';
-      document.getElementById('start-label').textContent = 'Running...';
-
-      let done = 0;
-      for (const [uid, code] of pairs) {
-        if (stopFlag) break;
-
-        document.getElementById('progress-label').textContent =
-          `Processing: ${code} → ${uid.slice(0, 16)}...`;
-
-        let validateRes = null, redeemRes = null;
-
-        validateRes = await validateCoupon(uid, code);
-        if (!validateRes.success) {
-          stats.skip++;
-          done++;
-          updateStats(done);
-          addRow(uid, code, validateRes, null);
-          await sleep(delayMs);
-          continue;
-        }
-
-        redeemRes = await redeemCoupon(uid, code);
-        if (redeemRes.success) {
-          stats.ok++;
-          // Auto-save valid manual codes to community DB on first success
-          if (isManual && !savedToCommunity.has(code)) {
-            savedToCommunity.add(code);
-            silentSaveToCommunity(code); // fire-and-forget
-          }
-        } else {
-          stats.fail++;
-        }
-
-        done++;
-        updateStats(done);
-        addRow(uid, code, validateRes, redeemRes);
-        await sleep(delayMs);
-      }
-
-      running = false; stopFlag = false;
-      document.getElementById('btn-start').disabled = false;
-      document.getElementById('btn-stop').style.display = 'none';
-      document.getElementById('start-spinner').style.display = 'none';
-      document.getElementById('start-label').textContent = '▶ Start Bulk Redeem';
-      document.getElementById('progress-label').textContent = 'Completed.';
-    }
-
-    function stopBulk() { stopFlag = true; }
-
-    function clearAll() {
-      document.getElementById('uids').value = '';
-      document.getElementById('codes').value = '';
-      document.getElementById('uid-count').textContent = '0 UIDs';
-      toggleCodeMode();
-      document.getElementById('result-body').innerHTML = '';
-      document.getElementById('results-section').style.display = 'none';
-      document.getElementById('progress-section').style.display = 'none';
-      stats = { total: 0, ok: 0, fail: 0, skip: 0 };
-      results = [];
-      rowIndex = 0;
-    }
-  </script>
 </body>
 
 </html>
+
+<script>
+    const IS_LOCAL = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+    const topUpTypeElement = document.getElementById("topUpType");
+    const codeListWrapper = document.getElementById("codeListWrapper");
+    const codeListElement = document.getElementById("codeList");
+    const topUpTypeDropdownBtn = document.getElementById("topUpTypeDropdownBtn");
+    const resultContainer = document.getElementById("resultContainer");
+    const resultSummary = document.getElementById("resultSummary");
+    const submitBtn = document.getElementById("submitBtn");
+
+    let topUpResults = [];
+
+    // ── Resize textarea to fit content ──────────────────────────────────────
+    function autoResize(el) {
+        el.style.height = "auto";
+        el.style.height = el.scrollHeight + "px";
+    }
+
+    function textAreaToList(value) {
+        return value
+            .split(/\r?\n/)
+            .map(item => item.trim())
+            .filter(Boolean);
+    }
+
+    function updateCodeListVisibility() {
+        const type = topUpTypeElement.value;
+        if (type === "manual") {
+            codeListWrapper.classList.remove("hidden");
+            autoResize(codeListElement);
+        } else {
+            codeListWrapper.classList.add("hidden");
+            codeListElement.value = "";
+            codeListElement.style.height = "auto";
+        }
+    }
+
+    function setTopUpType(value, label, clickedElement) {
+        topUpTypeElement.value = value;
+        topUpTypeDropdownBtn.textContent = label;
+        document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
+            item.classList.remove("active");
+        });
+        clickedElement.classList.add("active");
+        topUpTypeElement.dispatchEvent(new Event("change"));
+    }
+
+    // ── SweetAlert2 helpers ─────────────────────────────────────────────────
+    function showWarning(message) {
+        Swal.fire({ icon: "warning", title: "แจ้งเตือน", text: message, confirmButtonText: "ตกลง" });
+    }
+
+    function showSuccess(message) {
+        Swal.fire({ icon: "success", title: "สำเร็จ", text: message, confirmButtonText: "ตกลง" });
+    }
+
+    function showError(message) {
+        Swal.fire({ icon: "error", title: "เกิดข้อผิดพลาด", text: message, confirmButtonText: "ตกลง" });
+    }
+
+    function showLoading() {
+        Swal.fire({
+            title: "กำลังดำเนินการ...",
+            text: "กำลังเติมให้ครับปรี๊ ใจเย็นๆ",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+    }
+
+    function hideLoading() { Swal.close(); }
+
+    // ── HTML escape ─────────────────────────────────────────────────────────
+    function escapeHtml(value = "") {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function getBadgeClass(status) {
+        if (status === "success") return "text-bg-success";
+        if (status === "pending") return "text-bg-secondary";
+        return "text-bg-danger";
+    }
+
+    function getStatusLabel(status) {
+        if (status === "success") return "สำเร็จ";
+        if (status === "pending") return "รอดำเนิน";
+        return "ไม่สำเร็จ";
+    }
+
+    function countUidStats(codeResults = []) {
+        let success = 0, failed = 0;
+        codeResults.forEach(item => {
+            if (item.status === "success") success++;
+            else if (item.status !== "pending") failed++;
+        });
+        return { success, failed };
+    }
+
+    function updateSummary() {
+        let success = 0, failed = 0;
+        topUpResults.forEach(uidItem => {
+            uidItem.codes.forEach(codeItem => {
+                if (codeItem.status === "success") success++;
+                else if (codeItem.status !== "pending") failed++;
+            });
+        });
+        resultSummary.textContent = topUpResults.length
+            ? `UID ${topUpResults.length} รายการ | สำเร็จ ${success} | ไม่สำเร็จ ${failed}`
+            : "";
+    }
+
+    function renderResults() {
+        if (!topUpResults.length) {
+            resultContainer.innerHTML = `
+                <div class="text-muted border rounded-3 p-3 bg-light">
+                    ยังไม่มีผลลัพธ์
+                </div>
+            `;
+            resultSummary.textContent = "";
+            return;
+        }
+
+        const accordionId = "uidResultAccordion";
+        resultContainer.innerHTML = `
+        <div class="accordion" id="${accordionId}">
+            ${topUpResults.map((uidItem, uidIndex) => {
+                const collapseId = `collapse-${uidIndex}`;
+                const headingId  = `heading-${uidIndex}`;
+                const stats      = countUidStats(uidItem.codes);
+                return `
+                    <div class="accordion-item result-card mb-2">
+                        <h2 class="accordion-header" id="${headingId}">
+                            <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#${collapseId}"
+                                aria-expanded="false"
+                                aria-controls="${collapseId}">
+                                <div class="w-100 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 pe-2">
+                                    <div>
+                                        <div class="fw-semibold">
+                                            UID <span class="mono">${escapeHtml(uidItem.uid)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge text-bg-success">สำเร็จ ${stats.success}</span>
+                                        <span class="badge text-bg-danger">ไม่สำเร็จ ${stats.failed}</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="${collapseId}" class="accordion-collapse collapse"
+                            aria-labelledby="${headingId}">
+                            <div class="accordion-body p-0">
+                                ${uidItem.codes.map(codeItem => `
+                                    <div class="code-item p-3">
+                                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                            <div class="ps-3 ps-md-4">
+                                                <div class="fw-semibold mono">${escapeHtml(codeItem.code)}</div>
+                                                ${codeItem.message ? `<div class="text-muted small">${escapeHtml(codeItem.message)}</div>` : ''}
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge ${getBadgeClass(codeItem.status)}">${getStatusLabel(codeItem.status)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join("")}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("")}
+        </div>`;
+
+        updateSummary();
+    }
+
+    function createInitialResults(uidList, codeListByUid) {
+        return uidList.map(uid => ({
+            uid,
+            codes: (codeListByUid[uid] || []).map(code => ({
+                code,
+                status: "pending",
+                message: ""
+            }))
+        }));
+    }
+
+    function updateCodeResult(uid, code, patch) {
+        const uidItem  = topUpResults.find(item => item.uid === uid);
+        if (!uidItem) return;
+        const codeItem = uidItem.codes.find(item => item.code === code);
+        if (!codeItem) return;
+        Object.assign(codeItem, patch);
+        renderResults();
+    }
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    // ── API calls — proxy on hosted, direct on local ────────────────────────
+    async function validateCoupon(uid, code) {
+        try {
+            let r;
+            if (IS_LOCAL) {
+                const url = `https://coupon.netmarble.com/api/coupon/reward?gameCode=tskgb&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(uid)}`;
+                r = await fetch(url);
+            } else {
+                r = await fetch(`/api/validate?couponCode=${encodeURIComponent(code)}&pid=${encodeURIComponent(uid)}`);
+            }
+            return await r.json();
+        } catch (e) {
+            return { success: false, errorCode: -1, errorMessage: e.message };
+        }
+    }
+
+    async function redeemCoupon(uid, code) {
+        try {
+            let r;
+            if (IS_LOCAL) {
+                r = await fetch('https://coupon.netmarble.com/api/coupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameCode: 'tskgb', couponCode: code, langCd: 'TH_TH', pid: uid })
+                });
+            } else {
+                r = await fetch('/api/redeem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ couponCode: code, pid: uid })
+                });
+            }
+            return await r.json();
+        } catch (e) {
+            return { success: false, errorCode: -1, errorMessage: e.message };
+        }
+    }
+
+    async function fetchAutoCodeList() {
+        try {
+            const r    = await fetch('/api/codes');
+            const data = await r.json();
+            return Array.isArray(data) ? data : [];
+        } catch {
+            return [];
+        }
+    }
+
+    // ── Core processing loop ────────────────────────────────────────────────
+    async function processTopUp(uidList, codeListByUid) {
+        topUpResults = createInitialResults(uidList, codeListByUid);
+        renderResults();
+
+        for (const uid of uidList) {
+            const codes = codeListByUid[uid] || [];
+
+            for (const code of codes) {
+                try {
+                    // Step 1: validate
+                    const validateRes = await validateCoupon(uid, code);
+                    if (!validateRes.success) {
+                        updateCodeResult(uid, code, {
+                            status: "failed",
+                            message: validateRes.errorMessage || `ไม่ผ่านการตรวจ (${validateRes.errorCode})`
+                        });
+                        await sleep(600);
+                        continue;
+                    }
+
+                    // Step 2: redeem
+                    const redeemRes = await redeemCoupon(uid, code);
+                    if (redeemRes.success) {
+                        const reward = redeemRes?.resultData?.[0]?.productName || "";
+                        updateCodeResult(uid, code, {
+                            status: "success",
+                            message: reward ? `รางวัล: ${reward}` : ""
+                        });
+                    } else {
+                        updateCodeResult(uid, code, {
+                            status: "failed",
+                            message: redeemRes.errorMessage || `รหัส ${redeemRes.errorCode}`
+                        });
+                    }
+
+                    await sleep(600);
+                } catch (error) {
+                    updateCodeResult(uid, code, { status: "failed", message: error?.message || "" });
+                }
+            }
+        }
+    }
+
+    // ── Main entry point ────────────────────────────────────────────────────
+    async function topUpCoupon() {
+        const type          = topUpTypeElement.value;
+        const uidList       = textAreaToList(document.getElementById("uidList").value);
+        const manualCodeList = textAreaToList(document.getElementById("codeList").value);
+
+        if (uidList.length === 0) {
+            showWarning("กรุณากรอก UID อย่างน้อย 1 รายการ");
+            return;
+        }
+
+        if (type === "manual" && manualCodeList.length === 0) {
+            showWarning("กรุณากรอก Code อย่างน้อย 1 รายการ");
+            return;
+        }
+
+        try {
+            submitBtn.disabled = true;
+            showLoading();
+
+            let codeListByUid = {};
+
+            if (type === "manual") {
+                uidList.forEach(uid => { codeListByUid[uid] = [...manualCodeList]; });
+            } else {
+                const codes = await fetchAutoCodeList();
+                if (!codes.length) throw new Error("ไม่พบ code list จากระบบอัตโนมัติ");
+                uidList.forEach(uid => { codeListByUid[uid] = [...codes]; });
+            }
+
+            hideLoading();
+            await processTopUp(uidList, codeListByUid);
+            showSuccess("ดำเนินการเสร็จเรียบร้อย");
+        } catch (error) {
+            hideLoading();
+            showError(error?.message || "ไม่สามารถดำเนินการได้");
+        } finally {
+            submitBtn.disabled = false;
+        }
+    }
+
+    topUpTypeElement.addEventListener("change", updateCodeListVisibility);
+    updateCodeListVisibility();
+    renderResults();
+</script>
