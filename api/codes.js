@@ -1,7 +1,7 @@
 // Upstash Redis REST API — no SDK, plain fetch.
-// Env vars injected automatically by Vercel's Upstash integration:
-//   UPSTASH_REDIS_REST_KV_REST_API_URL
-//   UPSTASH_REDIS_REST_KV_REST_API_TOKEN
+// Env vars injected automatically by Vercel's Upstash KV integration:
+//   KV_REST_API_URL
+//   KV_REST_API_TOKEN
 // Plus one manual env var:
 //   CHECK_UID  (your in-game UID, used to validate codes before adding)
 
@@ -76,10 +76,7 @@ async function pruneCodesBackground(store) {
 
 // ── Parse raw body (Vercel doesn't always auto-parse JSON) ────────────────
 async function parseBody(req) {
-  // If Vercel already parsed it, use it directly
   if (req.body && typeof req.body === 'object') return req.body;
-
-  // Otherwise read the raw stream
   return new Promise((resolve) => {
     let data = '';
     req.on('data', chunk => { data += chunk; });
@@ -98,12 +95,9 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Verify env vars are present — surface a clear error if missing
+  // Guard: surface a clear error if env vars are missing
   if (!upstashUrl() || !upstashToken()) {
-    console.error('Missing Upstash env vars:', {
-      url:   upstashUrl()   ? 'set' : 'MISSING',
-      token: upstashToken() ? 'set' : 'MISSING',
-    });
+    console.error('Missing Upstash env vars — KV_REST_API_URL or KV_REST_API_TOKEN not set');
     return res.status(500).json({ error: 'Server misconfiguration: Upstash env vars not set' });
   }
 
