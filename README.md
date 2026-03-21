@@ -74,6 +74,7 @@ For hosted deployments, a serverless proxy is required to relay requests.
 - Plain HTML + CSS + Vanilla JavaScript
 - Zero dependencies, zero build step
 - Single file (`index.html`)
+- Claude Code
 
 ---
 
