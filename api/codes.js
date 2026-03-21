@@ -1,8 +1,8 @@
 // Upstash Redis REST API — no SDK, plain fetch.
-// Env vars injected automatically by Vercel's Upstash KV integration:
+// Env vars (manually set in Vercel):
 //   UPSTASH_REDIS_7K_KV_REST_API_URL
 //   UPSTASH_REDIS_7K_KV_REST_API_TOKEN
-// Plus one manual env var:
+// Manual env var:
 //   CHECK_UID  (your in-game UID, used to validate codes before adding)
 
 const STORE_KEY = 'sk_store';
@@ -10,7 +10,6 @@ const STORE_KEY = 'sk_store';
 function upstashUrl()   { return process.env.UPSTASH_REDIS_7K_KV_REST_API_URL; }
 function upstashToken() { return process.env.UPSTASH_REDIS_7K_KV_REST_API_TOKEN; }
 
-// ── Single-key read ───────────────────────────────────────────────────────
 async function readStore() {
   try {
     const res = await fetch(`${upstashUrl()}/get/${STORE_KEY}`, {
@@ -21,7 +20,7 @@ async function readStore() {
     const parsed = JSON.parse(result);
     return {
       codes:     Array.isArray(parsed.codes) ? parsed.codes : [],
-      lastClean: Number(parsed.lastClean)    || 0,
+      lastClean: Number(parsed.lastClean) || 0,
     };
   } catch (e) {
     console.error('readStore error:', e);
@@ -29,7 +28,6 @@ async function readStore() {
   }
 }
 
-// ── Single-key write ──────────────────────────────────────────────────────
 async function writeStore(store) {
   await fetch(`${upstashUrl()}/set/${STORE_KEY}`, {
     method:  'POST',
@@ -41,7 +39,6 @@ async function writeStore(store) {
   });
 }
 
-// ── Validate one code against Netmarble ──────────────────────────────────
 async function isValidCode(code) {
   const CHECK_UID = process.env.CHECK_UID || '';
   if (!CHECK_UID) return false;
@@ -64,7 +61,6 @@ async function isValidCode(code) {
   }
 }
 
-// ── Background prune (fire-and-forget, runs max once per 7 days) ──────────
 async function pruneCodesBackground(store) {
   const valid = [];
   for (const code of store.codes) {
@@ -74,56 +70,39 @@ async function pruneCodesBackground(store) {
   await writeStore({ codes: valid, lastClean: Date.now() });
 }
 
-// ── Parse raw body (Vercel doesn't always auto-parse JSON) ────────────────
-async function parseBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body;
-  return new Promise((resolve) => {
-    let data = '';
-    req.on('data', chunk => { data += chunk; });
-    req.on('end', () => {
-      try { resolve(JSON.parse(data)); }
-      catch { resolve({}); }
-    });
-    req.on('error', () => resolve({}));
-  });
-}
-
-// ── Handler ───────────────────────────────────────────────────────────────
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin',  '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Guard: surface a clear error if env vars are missing
   if (!upstashUrl() || !upstashToken()) {
-    console.error('Missing Upstash env vars — KV_REST_API_URL or KV_REST_API_TOKEN not set');
-    return res.status(500).json({ error: 'Server misconfiguration: Upstash env vars not set' });
+    console.error('Missing env vars: UPSTASH_REDIS_7K_KV_REST_API_URL or UPSTASH_REDIS_7K_KV_REST_API_TOKEN');
+    return res.status(500).json({ error: 'Upstash env vars not configured' });
   }
 
-  // GET — return codes list
   if (req.method === 'GET') {
     const store = await readStore();
     const daysSinceClean = (Date.now() - store.lastClean) / (1000 * 60 * 60 * 24);
     if (daysSinceClean >= 7) {
       await writeStore({ ...store, lastClean: Date.now() });
-      pruneCodesBackground(store); // fire-and-forget
+      pruneCodesBackground(store);
     }
     return res.status(200).json(store.codes);
   }
 
-  // POST — validate + add new code
   if (req.method === 'POST') {
-    const body = await parseBody(req);
+    const body = req.body && typeof req.body === 'object'
+      ? req.body
+      : (() => { try { return JSON.parse(req.body); } catch { return {}; } })();
+
     const { newCode } = body;
     if (!newCode) return res.status(400).json({ error: 'Missing newCode' });
 
     const store = await readStore();
-
     if (store.codes.includes(newCode)) {
-      return res.status(400).json({ error: 'Code already exists in Global list' });
+      return res.status(400).json({ error: 'Code already exists' });
     }
-
     if (!(await isValidCode(newCode))) {
       return res.status(400).json({ error: 'Code is invalid or expired' });
     }
@@ -134,4 +113,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
+};
