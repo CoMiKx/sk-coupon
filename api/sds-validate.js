@@ -5,12 +5,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { couponCode, pid } = req.query;
-  if (!couponCode || !pid) return res.status(400).json({ error: 'Missing couponCode or pid' });
+  const { couponCode, pid, cid } = req.query;
+  if (!couponCode || !pid || !cid) return res.status(400).json({ error: 'Missing couponCode, pid, or cid' });
 
   const upstream =
     `https://coupon.netmarble.com/api/coupon/reward` +
-    `?gameCode=nanaori&couponCode=${encodeURIComponent(couponCode)}&langCd=TH_TH&pid=${encodeURIComponent(pid)}`;
+    `?gameCode=nanaori&couponCode=${encodeURIComponent(couponCode)}&langCd=TH_TH&pid=${encodeURIComponent(pid)}&cid=${encodeURIComponent(cid)}`;
   try {
     const response = await fetch(upstream, {
       method: 'GET',

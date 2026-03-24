@@ -329,14 +329,14 @@
       }
     }
 
-    // Step 2: validate coupon (uses resolved PID)
-    async function validateCoupon(pid, code) {
+    // Step 2: validate coupon (uses resolved PID + CID)
+    async function validateCoupon(pid, cid, code) {
       try {
         let r;
         if (IS_LOCAL) {
-          r = await fetch(`https://coupon.netmarble.com/api/coupon/reward?gameCode=nanaori&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(pid)}`);
+          r = await fetch(`https://coupon.netmarble.com/api/coupon/reward?gameCode=nanaori&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(pid)}&cid=${encodeURIComponent(cid)}`);
         } else {
-          r = await fetch(`/api/sds-validate?couponCode=${encodeURIComponent(code)}&pid=${encodeURIComponent(pid)}`);
+          r = await fetch(`/api/sds-validate?couponCode=${encodeURIComponent(code)}&pid=${encodeURIComponent(pid)}&cid=${encodeURIComponent(cid)}`);
         }
         return await r.json();
       } catch (e) {
@@ -453,7 +453,7 @@
         const { pid, cid } = userInfoCache[uid];
 
         // Step 2: validate
-        const validateRes = await validateCoupon(pid, code);
+        const validateRes = await validateCoupon(pid, cid, code);
         if (!validateRes.success) {
           stats.skip++; done++; updateStats(done);
           addRow(uid, cid, code, 'SKIP', `✗ ${validateRes.errorMessage || validateRes.errorCode || 'invalid'}`, '—');

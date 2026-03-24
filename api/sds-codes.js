@@ -61,11 +61,12 @@ async function isValidCode(code) {
     pid = infoData.resultData[0].pid;
   } catch { return false; }
 
-  // Step 2: validate coupon
+  // Step 2: validate coupon (cid required for nanaori)
+  const cid = infoData.resultData[0].cid;
   try {
     const url =
       `https://coupon.netmarble.com/api/coupon/reward` +
-      `?gameCode=nanaori&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(pid)}`;
+      `?gameCode=nanaori&couponCode=${encodeURIComponent(code)}&langCd=TH_TH&pid=${encodeURIComponent(pid)}&cid=${encodeURIComponent(cid)}`;
     const r = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
