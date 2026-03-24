@@ -1,8 +1,14 @@
 {
   "rewrites": [
-    { "source": "/api/validate", "destination": "/api/validate" },
-    { "source": "/api/redeem",   "destination": "/api/redeem"   },
-    { "source": "/api/codes",    "destination": "/api/codes"    },
-    { "source": "/(.*)",         "destination": "/index.html"   }
+    { "source": "/api/validate",     "destination": "/api/validate"     },
+    { "source": "/api/redeem",       "destination": "/api/redeem"       },
+    { "source": "/api/codes",        "destination": "/api/codes"        },
+    { "source": "/api/sds-userinfo", "destination": "/api/sds-userinfo" },
+    { "source": "/api/sds-validate", "destination": "/api/sds-validate" },
+    { "source": "/api/sds-redeem",   "destination": "/api/sds-redeem"   },
+    { "source": "/api/sds-codes",    "destination": "/api/sds-codes"    },
+    { "source": "/sk.html",          "destination": "/sk.html"          },
+    { "source": "/sds.html",         "destination": "/sds.html"         },
+    { "source": "/(.*)",             "destination": "/index.html"       }
   ]
 }
