@@ -7,7 +7,7 @@
 
 const STORE_KEY = 'sds_store'; // separate from SK's sk_store
 
-function upstashUrl()   { return process.env.UPSTASH_REDIS_REST_KV_REST_API_URL; }
+function upstashUrl() { return process.env.UPSTASH_REDIS_REST_KV_REST_API_URL; }
 function upstashToken() { return process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN; }
 
 async function readStore() {
@@ -19,7 +19,7 @@ async function readStore() {
     if (!result) return { codes: [], lastClean: 0 };
     const parsed = JSON.parse(result);
     return {
-      codes:     Array.isArray(parsed.codes) ? parsed.codes : [],
+      codes: Array.isArray(parsed.codes) ? parsed.codes : [],
       lastClean: Number(parsed.lastClean) || 0,
     };
   } catch {
@@ -29,9 +29,9 @@ async function readStore() {
 
 async function writeStore(store) {
   await fetch(`${upstashUrl()}/set/${STORE_KEY}`, {
-    method:  'POST',
+    method: 'POST',
     headers: {
-      Authorization:  `Bearer ${upstashToken()}`,
+      Authorization: `Bearer ${upstashToken()}`,
       'Content-Type': 'application/octet-stream',
     },
     body: JSON.stringify(store),
@@ -42,8 +42,8 @@ async function isValidCode(code) {
   const CHECK_UID = process.env.SDS_CHECK_UID || '';
   if (!CHECK_UID) return false;
 
-  // Step 1: resolve PID from UID
-  let pid;
+  // Step 1: resolve PID + CID from UID
+  let pid, cid;
   try {
     const infoRes = await fetch(
       `https://coupon.netmarble.com/api/sign/userInfo?gameCode=nanaori&pid=${encodeURIComponent(CHECK_UID)}`,
@@ -59,10 +59,10 @@ async function isValidCode(code) {
     const infoData = await infoRes.json();
     if (!infoData.success || !infoData.resultData?.[0]) return false;
     pid = infoData.resultData[0].pid;
+    cid = infoData.resultData[0].cid;  // ← declare inside same scope
   } catch { return false; }
 
   // Step 2: validate coupon (cid required for nanaori)
-  const cid = infoData.resultData[0].cid;
   try {
     const url =
       `https://coupon.netmarble.com/api/coupon/reward` +
@@ -90,7 +90,7 @@ async function pruneCodesBackground(store) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
